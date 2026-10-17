@@ -1,13 +1,7 @@
 """Q11-Q18 as one scripted multi-user session on a throw-away copy of copilot.db.   py -m copilot.eval.run_memory"""
-import shutil
-import tempfile
-from pathlib import Path
-
 from copilot import tools
 
-tmp = Path(tempfile.mkdtemp()) / "copilot.db"
-shutil.copy(tools.DB_PATH, tmp)
-tools.DB_PATH = tmp
+tools.clean_copy()  # throw-away copy with no runtime data, whatever was done in the UI
 from copilot import memory  # noqa: E402  (must import after DB_PATH is redirected)
 
 MICHAEL, JESSICA, TYLER, JAKE, LAURA = "U-201", "U-202", "U-204", "U-102", "U-401"

@@ -10,4 +10,8 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  server: {
+    // the Python API (py -m copilot.server) listens on :8000; proxying keeps the browser same-origin (no CORS)
+    proxy: { "/api": { target: "http://127.0.0.1:8000", changeOrigin: true, timeout: 200000, proxyTimeout: 200000 } },
+  },
 });

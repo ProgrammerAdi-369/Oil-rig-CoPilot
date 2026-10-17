@@ -1,4 +1,4 @@
-# Asset Intelligence Copilot — Architecture & Documentation
+﻿# Asset Intelligence Copilot — Architecture & Documentation
 
 A chat copilot that answers operators' plain-English questions about an oil field **correctly and with evidence**, remembers
 what people tell it, learns from corrections, and says so when people (or the data) disagree.
@@ -863,60 +863,8 @@ _All data in this project is synthetic. Manuals and SOPs are fictional and not r
 
 ## Frontend integration and backend compatibility
 
-The frontend is intentionally structured as a backend-ready chat and telemetry surface, not as a disconnected mock. The UI layer maps directly to the backend contract described in this document and is designed to consume JSON responses shaped like:
+The frontend is now connected to a real HTTP API (`copilot/server.py`) backed by `copilot.db`; it no longer contains mock data.
+The authoritative description — API routes, response shapes, run commands, privacy model, what was changed and known limitations — is in
+[`Docs/WEB_UI.md`](../flytbase-ahc-swe-asset-intelligence-dataset/Docs/WEB_UI.md).
 
-```json
-{
-  "rows": [
-    {
-      "wellId": "WELL-0001",
-      "status": "non-producing",
-      "evidence": ["INS-0001-0203"]
-    }
-  ],
-  "evidence": ["INS-0001-0203", "SR-02"],
-  "visual": "card",
-  "window": ["2026-10-01", "2026-10-16"]
-}
-```
-
-### Frontend mapping to backend services
-
-| Backend capability | Frontend surface                  | Notes                                                             |
-| ------------------ | --------------------------------- | ----------------------------------------------------------------- |
-| `well_status`      | chat answer card + evidence panel | displays live status, reason, and supporting citations            |
-| `find_wells`       | operational summary table         | rows map directly to the studio overview data                     |
-| `downtime`         | trend charts and summary cards    | used for bar and line chart generations                           |
-| `spills`           | spill area map and severity cards | supports map, heatmap, and alert overlays                         |
-| `compliance`       | HSE actions + rulebook            | aligns to rule breach and guardrail logic                         |
-| `recall`           | thread memory and context tokens  | keeps user-specific state separate from shared data               |
-| `correct_value`    | alert conflict model              | preserves original values and shows human-reviewed corrections    |
-| `add_type_rule`    | rulebook and override editor      | allows user-scoped threshold changes without overwriting raw data |
-
-### Recommended integration contract
-
-The frontend should treat all backend responses as an adapter boundary instead of directly embedding raw server fields into UI components. A recommended pattern is:
-
-1. Call a service wrapper from the React layer.
-2. Normalize the response into the app's view model.
-3. Render only the transformed data in chart, table, or chat components.
-4. Keep evidence IDs and audit metadata in the UI state so citations remain traceable.
-
-### API readiness checklist
-
-- Query tools return a consistent `{ rows, evidence, visual, window }` shape.
-- User identity is injected server-side and never passed as a free-form prompt value.
-- All corrections preserve original values and keep author metadata.
-- Visual rendering is based on the response's `visual` field, not assumed from the frontend state.
-- The app remains compatible with a later transition from mock data to production API endpoints without rewriting the chat shell.
-
-### Frontend status in this repo
-
-The current React app already includes:
-
-- a dark industrial dashboard shell
-- a rulebook and alert layer aligned with the backend benchmark checklist
-- a backend-ready contract layer under `src/services/assetApi.js`
-- a studio panel that exposes the backend model and the main deterministic tools
-
-This gives the project a clean boundary for connecting to the future Python backend without breaking the UX or the data contract.
+Quick start: `py -m copilot.server` (API on :8000) and `npm run dev` in this folder (UI on :5173, `/api` is proxied).

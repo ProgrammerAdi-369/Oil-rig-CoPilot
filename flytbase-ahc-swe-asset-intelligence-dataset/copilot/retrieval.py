@@ -19,11 +19,14 @@ def _embedder():
     return _model
 
 
-def embed_missing(batch=256):
-    rows = q("SELECT chunk_id, title, text FROM chunks WHERE embedding IS NULL")
+def embed_missing(batch=256, doc_types=None, max_chars=2000):
+    """Embed chunks that have no vector yet. doc_types limits which ones: on the test dataset only manuals, SOPs/memos and notes are
+    embedded (~2k chunks); the 40k report chunks stay keyword-searchable (FTS5) and their facts are already extracted into tables."""
+    where = f" AND doc_type IN ({','.join('?' * len(doc_types))})" if doc_types else ""
+    rows = q(f"SELECT chunk_id, title, text FROM chunks WHERE embedding IS NULL{where}", *(doc_types or []))
     for i in range(0, len(rows), batch):
         part = rows[i:i + batch]
-        vecs = list(_embedder().embed([f"{r['title']}\n{r['text']}"[:2000] for r in part]))
+        vecs = list(_embedder().embed([f"{r['title']}\n{r['text']}"[:max_chars] for r in part]))
         db().executemany("UPDATE chunks SET embedding=? WHERE chunk_id=?",
                          [(np.asarray(v, dtype=np.float32).tobytes(), r["chunk_id"]) for v, r in zip(vecs, part)])
         db().commit()
@@ -78,4 +81,6 @@ def search(query, k=6, doc_type=None, asset_id=None, well_type=None):
 
 
 if __name__ == "__main__":
-    print("embedded", embed_missing())
+    import sys
+    types = sys.argv[1].split(",") if len(sys.argv) > 1 else None  # e.g. manual,sop,note
+    print("embedded", embed_missing(doc_types=types, max_chars=1200 if types else 2000))

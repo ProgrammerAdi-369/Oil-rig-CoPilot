@@ -1,0 +1,233 @@
+/* Generated visual components rendered inside an answer: card, table, line, bar, map, heatmap. */
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.viz-block {
+  position: relative;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--line);
+}
+.viz-block.wide {
+  grid-column: 1 / -1;
+}
+.viz-block > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.viz-block > header strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.86rem;
+}
+.viz-block > header small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.viz-block header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.viz-block header button:hover {
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.viz-empty {
+  margin: 8px 0;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+.viz-caption {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.viz-chart {
+  height: 230px;
+}
+
+/* tags used in tables */
+.table-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  white-space: nowrap;
+}
+.table-tag.stable {
+  color: #d1fae5;
+  background: rgba(16, 185, 129, 0.14);
+}
+.table-tag.critical {
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.14);
+}
+.table-tag.warning {
+  color: #fef3c7;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+/* well status card */
+.viz-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.viz-card-head strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.98rem;
+}
+.viz-card-head small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.viz-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.viz-metrics div {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+.viz-metrics small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.viz-metrics strong {
+  display: block;
+  margin: 4px 0;
+  color: #f8fafc;
+  font-size: 1.15rem;
+}
+.viz-metrics em {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-style: normal;
+}
+.viz-facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.viz-facts div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 0.78rem;
+}
+.viz-facts dt {
+  color: var(--muted);
+}
+.viz-facts dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.viz-flag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fcd34d;
+  font-size: 0.64rem;
+}
+.viz-list {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.viz-list small {
+  color: #64748b;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.viz-list p {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+/* map */
+.viz-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.07), rgba(16, 185, 129, 0.06)),
+    rgba(15, 23, 42, 0.9);
+}
+
+/* heatmap */
+.viz-heat {
+  display: grid;
+  gap: 4px;
+  align-items: center;
+  overflow-x: auto;
+  font-size: 0.7rem;
+}
+.viz-heat-row {
+  display: contents;
+}
+.viz-heat-col {
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.64rem;
+}
+.viz-heat-label {
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+.viz-heat-cell {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  border-radius: 6px;
+  color: #f8fafc;
+}
+.viz-heat-total {
+  color: #f8fafc;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .viz-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,6 +4,7 @@ import traceback
 
 from copilot import tools
 
+tools.clean_copy()  # never judge the engine on a database that someone has been using
 CHECKS = []
 
 

@@ -1,0 +1,2165 @@
+[
+ {
+  "key": "Q1",
+  "question": "Is WELL-0001 producing oil right now? When was it last inspected, and by whom? Show me its status card.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle delta 3.2, producing=False"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'card', expected ['card']"
+   },
+   {
+    "id": "B:stale_status",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q2",
+  "question": "Which wells in Northeast Block 8 are not producing oil right now, and why? Show them in a table.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 60,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4} vs tool {'WELL-0164': 4.1, 'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4}"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "B:stale_status",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:no_recorded_reason",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:no_invented_cause",
+    "status": "undecided",
+    "severity": "critical",
+    "detail": "needs judge (no key / no proof)"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4} vs tool {'WELL-0164': 4.1, 'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4}"
+   }
+  ],
+  "layer": "tool-logic"
+ },
+ {
+  "key": "Q3",
+  "question": "Show a line chart of WELL-0001's wellhead temperature against air temperature for the last 13 weeks, and mark when it was not producing oil.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle 13 points, down ['2026-10-08', '2026-10-15']"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'line', expected ['line']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q4",
+  "question": "How many oil spills has WELL-0001 had in the last 4 years, and how much oil in total? List them in a table.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle 6 spills 15.1 bbl vs tool 6"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q5",
+  "question": "How many days was WELL-0001 down in 2025?",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle 21 days"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['text']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q6",
+  "question": "Which 3 wells in Northeast Block 7 had the most downtime in the last 4 months? Show a bar chart.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle top [('WELL-0121', 49), ('WELL-0107', 42), ('WELL-0138', 42), ('WELL-0119', 28)]"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'bar', expected ['bar']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q7",
+  "question": "Show on a map every well in Northeast Block 8 with a real spill in the last 90 days.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 60,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0151': 5.4, 'WELL-0165': 1.2, 'WELL-0175': 3.9, 'WELL-0186': 0.6}"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'map', expected ['map']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0151': 5.4, 'WELL-0165': 1.2, 'WELL-0175': 3.9, 'WELL-0186': 0.6}"
+   }
+  ],
+  "layer": "tool-logic"
+ },
+ {
+  "key": "Q8",
+  "question": "Show a heatmap of 2026 spills by geographic area and month.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 85,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [43.0]"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle total 141 vs tool 141"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'heatmap', expected ['heatmap']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [43.0]"
+   }
+  ],
+  "layer": "model-noise"
+ },
+ {
+  "key": "Q9",
+  "question": "Which rules has WELL-0001 broken in the last 12 months, and what is still open?",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 95,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle ['RC-04', 'SR-01', 'SR-02', 'SR-03'] vs tool ['RC-04', 'SR-01', 'SR-02', 'SR-03']"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table', 'text']"
+   },
+   {
+    "id": "B:unrecorded_shutin",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "B:unrecorded_shutin",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "regex"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q10",
+  "question": "In Southwest Block 24, which spills in the last 90 days were not contained within the SOP time limit?",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 0,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "missing ['WELL-0082', '7.1', 'WELL-0100', '8.1', 'MNT-0082-028', 'MNT-0100-034']"
+   },
+   {
+    "id": "S1w",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "wells outside the expected set: ['WELL-0080']"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0082': ('INS-0082-0198', 7.1), 'WELL-0100': ('INS-0100-0196', 8.1)}"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F1",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "missing ['WELL-0082', '7.1', 'WELL-0100', '8.1', 'MNT-0082-028', 'MNT-0100-034']"
+   },
+   {
+    "id": "S1w",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "wells outside the expected set: ['WELL-0080']"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0082': ('INS-0082-0198', 7.1), 'WELL-0100': ('INS-0100-0196', 8.1)}"
+   }
+  ],
+  "layer": "tool-output"
+ },
+ {
+  "key": "Q11a",
+  "question": "Which 3 wells in Northeast Block 7 had the most downtime in the last 4 months? Show a bar chart.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle top [('WELL-0121', 49), ('WELL-0107', 42), ('WELL-0138', 42), ('WELL-0119', 28)]"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'bar', expected ['bar']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q11b",
+  "question": "For the three wells we discussed yesterday, what have repairs cost this year?",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 45,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [46942.0, 25794.0, 5176.0]"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0121': 25794, 'WELL-0138': 46942, 'WELL-0107': 5176}"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['bar', 'table', 'text']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [46942.0, 25794.0, 5176.0]"
+   },
+   {
+    "id": "F4",
+    "status": "fail",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0121': 25794, 'WELL-0138': 46942, 'WELL-0107': 5176}"
+   }
+  ],
+  "layer": "tool-logic"
+ },
+ {
+  "key": "Q12a",
+  "question": "The 15 Oct reading for WELL-0164 is wrong. The handheld thermal gun used in that inspection was faulty; the field crew re-measured the wellhead at 41.0 \u00b0C.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 85,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [41.0]"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'card', expected ['card', 'text']"
+   },
+   {
+    "id": "B:original_kept",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:now_producing",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:conflict_surfaced",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:ask_confirm",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "F3",
+    "status": "fail",
+    "severity": "major",
+    "detail": "numbers not found in tool results: [41.0]"
+   }
+  ],
+  "layer": "model-noise"
+ },
+ {
+  "key": "Q12b",
+  "question": "Which wells in Northeast Block 8 are not producing oil right now, and why? Show them in a table.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 85,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle {'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4} vs tool {'WELL-0170': 2.9, 'WELL-0172': 5.7, 'WELL-0175': 0.4}"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "B:removed_well_explained",
+    "status": "fail",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "B:removed_well_explained",
+    "status": "fail",
+    "severity": "major",
+    "detail": "regex"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q13",
+  "question": "The AI estimated the 24 Sep spill at WELL-0151 as 4.5 bbl. The field crew measured 5.4 bbl.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'card', expected ['card', 'text']"
+   },
+   {
+    "id": "B:original_kept",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:overdue_notice",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:report_outdated",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q14a",
+  "question": "Which wells in Northeast Block 7 need a root-cause analysis on their pump jack?",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 95,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "no out-of-scope data"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle ['WELL-0108', 'WELL-0121', 'WELL-0138']"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['NE-07']"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['NE-07']"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q14b",
+  "question": "Note for all T350 wells: our team now wants a pump jack root-cause analysis after 2 repairs, not 3.",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 90,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['text']"
+   },
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['U-201']"
+   },
+   {
+    "id": "H8",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internals leaked: ['rca_corrective_count']"
+   }
+  ],
+  "violations": [
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['U-201']"
+   },
+   {
+    "id": "H8",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internals leaked: ['rca_corrective_count']"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q14c",
+  "question": "Which wells in Northeast Block 7 need a root-cause analysis on their pump jack?",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "no out-of-scope data"
+   },
+   {
+    "id": "S1w",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "wells match"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "F4",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "oracle ['WELL-0108', 'WELL-0120', 'WELL-0121', 'WELL-0138']"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table']"
+   },
+   {
+    "id": "B:follows_user_rule",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q15a",
+  "question": "Is WELL-0164 producing oil right now?",
+  "user": "U-202",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'card', expected ['card', 'text']"
+   },
+   {
+    "id": "B:concludes_producing",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:conflict_surfaced",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q15b",
+  "question": "Which spills in Northeast Block 8 in the last 90 days needed a report to the regulator?",
+  "user": "U-401",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['table', 'text']"
+   },
+   {
+    "id": "B:only_one_needs_report",
+    "status": "undecided",
+    "severity": "major",
+    "detail": "needs judge (no key / no proof)"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q16a",
+  "question": "FYI for everyone: WELL-0007 will be shut in from 17 Oct for a 10-day planned workover.",
+  "user": "U-102",
+  "status": "FAIL",
+  "score": 85,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "fail",
+    "severity": "major",
+    "detail": "visual 'table', expected ['card', 'text']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "V1",
+    "status": "fail",
+    "severity": "major",
+    "detail": "visual 'table', expected ['card', 'text']"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q16b",
+  "question": "Is any downtime planned for WELL-0007?",
+  "user": "U-201",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['card', 'table', 'text']"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q16c",
+  "question": "For the three wells we discussed yesterday, what have repairs cost this year?",
+  "user": "U-202",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "S2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "no out-of-scope data"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['text']"
+   },
+   {
+    "id": "B:no_prior_conversation",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q17a",
+  "question": "WELL-0175 has been shut in for planned work since 14 Oct.",
+  "user": "U-201",
+  "status": "FAIL",
+  "score": 80,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "fail",
+    "severity": "major",
+    "detail": "visual 'table', expected ['card', 'text']"
+   },
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['U-201']"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [
+   {
+    "id": "V1",
+    "status": "fail",
+    "severity": "major",
+    "detail": "visual 'table', expected ['card', 'text']"
+   },
+   {
+    "id": "H7",
+    "status": "fail",
+    "severity": "minor",
+    "detail": "internal ids shown instead of names: ['U-201']"
+   }
+  ],
+  "layer": "prompt"
+ },
+ {
+  "key": "Q17b",
+  "question": "WELL-0175 is running fine.",
+  "user": "U-204",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['text']"
+   },
+   {
+    "id": "B:conflict_surfaced",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:ask_confirm",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q17c",
+  "question": "WELL-0001 is back online since 14 Oct.",
+  "user": "U-102",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'text', expected ['text']"
+   },
+   {
+    "id": "B:conflict_surfaced",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:ask_confirm",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ },
+ {
+  "key": "Q18",
+  "question": "Was the 20 Aug spill at WELL-0101 real oil?",
+  "user": "U-401",
+  "status": "PASS",
+  "score": 100,
+  "checks": [
+   {
+    "id": "F1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all required facts present"
+   },
+   {
+    "id": "F3",
+    "status": "pass",
+    "severity": "major",
+    "detail": "numbers grounded"
+   },
+   {
+    "id": "C1",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "all cited ids exist"
+   },
+   {
+    "id": "C3",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "citations came from tool results"
+   },
+   {
+    "id": "C2",
+    "status": "pass",
+    "severity": "critical",
+    "detail": "ids match their wells"
+   },
+   {
+    "id": "C4",
+    "status": "pass",
+    "severity": "major",
+    "detail": "expected evidence cited"
+   },
+   {
+    "id": "V1",
+    "status": "pass",
+    "severity": "major",
+    "detail": "visual 'table', expected ['table', 'text']"
+   },
+   {
+    "id": "B:yes_first",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "B:both_kept",
+    "status": "pass",
+    "severity": "major",
+    "detail": "regex"
+   },
+   {
+    "id": "H7",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "names used"
+   },
+   {
+    "id": "H8",
+    "status": "pass",
+    "severity": "minor",
+    "detail": "clean"
+   }
+  ],
+  "violations": [],
+  "layer": null
+ }
+]

@@ -1,105 +1,46 @@
-export const backendContracts = [
-  {
-    name: "well_status",
-    method: "GET",
-    route: "/api/wells/:wellId/status",
-    purpose:
-      "Compute live producing state, last inspection, corrections, evidence, and reasons.",
-    response:
-      "{ wellId, producing, status, reason, evidence, correctedAt, source }",
-  },
-  {
-    name: "find_wells",
-    method: "GET",
-    route: "/api/wells/search",
-    purpose:
-      "Return wells by production state, area, well type, and reason filters.",
-    response: "{ rows, evidence, visual, window }",
-  },
-  {
-    name: "downtime",
-    method: "GET",
-    route: "/api/metrics/downtime",
-    purpose:
-      "Compute downtime by well, area, or month using derived inspection logic.",
-    response: "{ rows, totalDays, evidence, visual }",
-  },
-  {
-    name: "spills",
-    method: "GET",
-    route: "/api/spills",
-    purpose:
-      "Return real spill data after correction overlays and compliance-based classification.",
-    response: "{ rows, volume, class, evidence, visual }",
-  },
-  {
-    name: "compliance",
-    method: "GET",
-    route: "/api/compliance",
-    purpose:
-      "List rule breaches, pending actions, SLA deadlines, and evidence-backed details.",
-    response: "{ rows, counts, status, evidence }",
-  },
-  {
-    name: "recall",
-    method: "GET",
-    route: "/api/memory/recall",
-    purpose:
-      "Retrieve private memory for the current user without leaking another operator's context.",
-    response: "{ conversations, entities, empty }",
-  },
-  {
-    name: "correct_value",
-    method: "POST",
-    route: "/api/values/correct",
-    purpose:
-      "Apply a correction while preserving the original value and author metadata.",
-    response: "{ before, after, conflict, status, auditTrail }",
-  },
-  {
-    name: "add_type_rule",
-    method: "POST",
-    route: "/api/rules/type",
-    purpose:
-      "Add a well-type scoped rule that overrides global defaults for the relevant asset class.",
-    response: "{ rule, scope, appliedTo, author }",
-  },
-];
+// Thin client for the Python API (copilot/server.py). Every call returns the server's JSON or throws ApiError.
+// The user is sent as X-User-Id and injected into the agent by the server; X-Field-Date simulates "yesterday".
 
-export const backendStatus = {
-  service: "Asset Intelligence Copilot",
-  version: "v0.5.0",
-  engine: "SQLite + deterministic query tools + retrieval layer",
-  status: "ready-for-backend-connection",
-  dataContract: "{ rows, evidence, visual, window }",
-};
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
 
-export const backendApi = {
-  async getHealth() {
-    return {
-      ok: true,
-      data: backendStatus,
-    };
-  },
+async function request(path, { method = "GET", user, day, body, timeout = 180000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(`/api${path}`, {
+      method,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(user ? { "X-User-Id": user } : {}),
+        ...(day ? { "X-Field-Date": day } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(data.error || `Request failed (${res.status})`, res.status);
+    return data;
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    if (err.name === "AbortError") throw new ApiError("The request timed out. The model may be busy; try again.", 0);
+    throw new ApiError("Cannot reach the backend. Start it with: py -m copilot.server", 0);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
-  async getContracts() {
-    return {
-      ok: true,
-      data: backendContracts,
-    };
-  },
-
-  async getRulebook() {
-    return {
-      ok: true,
-      data: [
-        "well_status",
-        "downtime",
-        "spills",
-        "compliance",
-        "memory",
-        "corrections",
-      ],
-    };
-  },
+export const api = {
+  meta: () => request("/meta"),
+  users: () => request("/users"),
+  evidence: (id) => request(`/evidence/${encodeURIComponent(id)}`),
+  chats: (user) => request("/chats", { user }),
+  chat: (user, id) => request(`/chats/${encodeURIComponent(id)}`, { user }),
+  deleteChat: (user, id) => request(`/chats/${encodeURIComponent(id)}`, { method: "DELETE", user }),
+  send: (user, chatId, message, day) =>
+    request("/chat", { method: "POST", user, day, body: { chat_id: chatId, message } }),
 };

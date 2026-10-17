@@ -6,6 +6,7 @@ import inspect
 import json
 import os
 import re
+import threading
 import time
 import urllib.request
 import uuid
@@ -23,6 +24,11 @@ for d in Path(__file__).resolve().parents:  # nearest .env above the repo suppli
 
 BASE = os.environ.get("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
 MODEL = os.environ.get("LLM_MODEL", "gemma-4-26b-a4b-it")
+MIN_INTERVAL = float(os.environ.get("LLM_MIN_INTERVAL", "0"))  # seconds between LLM calls
+_last_call = 0.0
+_pace = threading.Lock()
+DEADLINE = float(os.environ.get("LLM_DEADLINE", "900"))  # seconds of retrying per model call; the server lowers it
+ADDENDUM = Path(__file__).parent / "prompt_addendum.txt"
 
 REGISTRY = {f.__name__: f for f in (
     tools.well_status, tools.find_wells, tools.series, tools.downtime, tools.spills, tools.compliance, tools.repairs,
@@ -32,7 +38,7 @@ INJECTED = {"user_id"}  # supplied by the runtime from the logged-in user, never
 PARAM_TYPE = {"producing": "boolean", "top_n": "integer", "last_days": "integer", "last_weeks": "integer", "last_months": "integer",
               "this_year": "boolean", "value": "number", "claims_producing": "integer", "days_ago": "integer", "k": "integer",
               "limit": "integer", "well_ids": "array"}
-VISUALS = [(r"heat ?map", "heatmap"), (r"line chart|trend", "line"), (r"bar chart", "bar"), (r"\bmap\b|pins", "map"),
+VISUALS = [(r"heat ?map", "heatmap"), (r"line chart|trend", "line"), (r"bar chart", "bar"), (r"(?<!heat )\bmap\b|pins", "map"),
            (r"status card|\bcard\b", "card"), (r"\btable\b|\blist\b", "table")]
 
 SYSTEM = """You are the Asset Intelligence Copilot for an oil field. Today is {today}. Use the tools for every fact; never do
@@ -58,6 +64,12 @@ arithmetic or guess data yourself. Rules:
 Answer briefly. The UI renders the table/chart/map from the tool result, so do not repeat every row in text."""
 
 
+def named_visuals(question):
+    """Every visual the user names, in the order they ask for them ("a table and a map" -> ["table", "map"])."""
+    hits = [(m.start(), v) for pat, v in VISUALS for m in [re.search(pat, question, re.I)] if m]
+    return list(dict.fromkeys(v for _, v in sorted(hits)))
+
+
 def schema(fn):
     props, required = {}, []
     for name, p in inspect.signature(fn).parameters.items():
@@ -72,17 +84,27 @@ def schema(fn):
                                               "parameters": {"type": "object", "properties": props, "required": required}}}
 
 
-def call_llm(messages, key):
-    body = json.dumps({"model": MODEL, "messages": messages, "tools": [schema(f) for f in REGISTRY.values()], "temperature": 0}).encode()
+def call_llm(messages, key, model=None, with_tools=True):
+    payload = {"model": model or MODEL, "messages": messages, "temperature": 0}
+    if with_tools:
+        payload["tools"] = [schema(f) for f in REGISTRY.values()]
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(f"{BASE}/chat/completions", body, {"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-    for attempt in range(4):
+    global _last_call
+    deadline = time.time() + DEADLINE  # interactive callers (the web server) cap the total time spent retrying
+    for attempt in range(7):
+        with _pace:  # pace calls across threads to stay under free-tier limits
+            time.sleep(max(0, MIN_INTERVAL - (time.time() - _last_call)))
+            _last_call = time.time()
         try:
-            with urllib.request.urlopen(req, timeout=120) as r:
+            with urllib.request.urlopen(req, timeout=max(5, min(120, deadline - time.time()))) as r:
                 return json.load(r)["choices"][0]["message"]
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
-            if attempt == 3 or (isinstance(e, urllib.error.HTTPError) and e.code not in (429, 500, 503)):
+            retry_after = e.headers.get("Retry-After") if isinstance(e, urllib.error.HTTPError) else None
+            wait = min(90, float(retry_after) if retry_after and retry_after.isdigit() else 10 * 2 ** attempt)
+            if attempt == 6 or time.time() + wait > deadline or (isinstance(e, urllib.error.HTTPError) and e.code not in (429, 500, 503)):
                 raise
-            time.sleep(5 * 2 ** attempt)  # free tiers rate-limit and time out: back off and retry
+            time.sleep(wait)  # back off and retry
 
 
 def run_tool(name, args, user_id):
@@ -112,18 +134,36 @@ def ask(question, user_id, chat_id=None, history=None, key=None, ts=None):
     chat_id = chat_id or uuid.uuid4().hex[:8]
     memory.log_turn(user_id, chat_id, "user", question, ts)
     areas = "; ".join(f"{r['area_id']} = {r['name']}" for r in tools.q("SELECT area_id, name FROM areas"))
-    messages = [{"role": "system", "content": SYSTEM.format(today=tools.as_of(), areas=areas)}, *(history or []),
+    extra = ADDENDUM.read_text(encoding="utf-8") if ADDENDUM.exists() else ""  # rules appended by the QA fix loop
+    messages = [{"role": "system", "content": SYSTEM.format(today=tools.as_of(), areas=areas) + extra}, *(history or []),
                 {"role": "user", "content": question}]
-    last, evidence = None, []
+    last, evidence, trace, all_rows, tool_evidence, tool_results = None, [], [], [], [], []
     for _ in range(8):
-        msg = call_llm(messages, key)
+        try:
+            msg = call_llm(messages, key)
+        except (urllib.error.URLError, TimeoutError):
+            if not trace:
+                raise  # nothing happened yet: let the caller report the failure
+            done = ", ".join(dict.fromkeys(t["tool"] for t in trace))
+            changed = any(t["tool"] in ("correct_value", "add_well_note", "add_type_rule") and not t["error"] for t in trace)
+            note = "The change you asked for was recorded." if changed else "The results are shown below."
+            msg = {"role": "assistant", "content": f"I ran {done}, but the language model did not answer in time, so there is no written summary. "
+                                                   f"{note} Ask again if you want an explanation."}
+            break
         messages.append(msg)
         if not msg.get("tool_calls"):
             break
         for tc in msg["tool_calls"]:
-            res = run_tool(tc["function"]["name"], json.loads(tc["function"]["arguments"] or "{}"), user_id)
+            args = json.loads(tc["function"]["arguments"] or "{}")
+            res = run_tool(tc["function"]["name"], args, user_id)
+            trace.append({"tool": tc["function"]["name"], "args": {k: v for k, v in args.items() if k != "user_id"},
+                          "n_rows": len(res.get("rows") or []), "error": res.get("error")})
+            all_rows += [r for r in (res.get("rows") or []) if isinstance(r, dict)]
+            tool_evidence += res.get("evidence", [])
             if res.get("rows") and "error" not in res:
                 last = res
+                tool_results.append({"tool": tc["function"]["name"], "args": trace[-1]["args"], "rows": res["rows"][:200],
+                                     "visual": res.get("visual"), "window": res.get("window"), "evidence": res.get("evidence", [])})
                 evidence += res.get("evidence", [])
                 ids = [v for r in res["rows"] if isinstance(r, dict) for k, v in r.items()
                        if k in ("asset_id", "key", "well_id") and isinstance(v, str) and v.startswith("WELL-")]
@@ -131,11 +171,16 @@ def ask(question, user_id, chat_id=None, history=None, key=None, ts=None):
                     memory.remember(user_id, chat_id, question[:120], ids, ts)
             messages.append({"role": "tool", "tool_call_id": tc["id"], "content": compact(res)})
     text = re.sub(r"</?thought>", "", re.sub(r"<thought>.*?</thought>", "", msg.get("content") or "", flags=re.S)).strip()
-    memory.log_turn(user_id, chat_id, "assistant", text, ts)
-    visual = next((v for pat, v in VISUALS if re.search(pat, question, re.I)), last["visual"] if last else "text")
+    turn_id = memory.log_turn(user_id, chat_id, "assistant", text, ts)
+    named = named_visuals(question)
+    default = last["visual"] if last else "text"
+    if last and len(last["rows"]) == 1 and default in ("bar", "line", "table"):
+        default = "text"  # a single value is a short answer, not a chart
+    visual = named[0] if named else default
     cited = sorted(e for e in set(evidence) if e in text)  # show only the records the answer actually cites
     return {"text": text, "visual": visual, "rows": (last or {}).get("rows", []), "evidence": cited or sorted(set(evidence)),
-            "history": messages[1:], "chat_id": chat_id}
+            "history": messages[1:], "chat_id": chat_id, "turn_id": turn_id, "trace": trace, "tool_rows": all_rows[:500],
+            "tool_evidence": sorted(set(tool_evidence)), "named": named, "tool_results": tool_results}
 
 
 if __name__ == "__main__":

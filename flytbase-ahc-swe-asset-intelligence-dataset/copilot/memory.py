@@ -113,8 +113,50 @@ def add_type_rule(user_id, well_type, key, value, text):
 
 
 def log_turn(user_id, chat_id, role, text, ts=None):
-    db().execute("INSERT INTO conversations (user_id, chat_id, ts, role, text) VALUES (?,?,?,?,?)", (user_id, chat_id, ts or _now(), role, text))
+    cur = db().execute("INSERT INTO conversations (user_id, chat_id, ts, role, text) VALUES (?,?,?,?,?)",
+                       (user_id, chat_id, ts or _now(), role, text))
     db().commit()
+    return cur.lastrowid
+
+
+def save_payload(turn_id, payload):
+    db().execute("INSERT OR REPLACE INTO chat_payloads VALUES (?,?)", (turn_id, json.dumps(payload, default=str)))
+    db().commit()
+
+
+def chats(user_id, limit=50):
+    """This user's chats, newest first. The user_id filter is the privacy boundary: nobody else's chat is ever listed."""
+    return q("""SELECT chat_id, min(ts) AS started, max(ts) AS last_ts, count(*) AS turns,
+                       (SELECT text FROM conversations c2 WHERE c2.user_id=c.user_id AND c2.chat_id=c.chat_id AND c2.role='user'
+                        ORDER BY c2.id LIMIT 1) AS title
+                FROM conversations c WHERE user_id=? GROUP BY chat_id ORDER BY max(id) DESC LIMIT ?""", user_id, limit)
+
+
+def chat_messages(user_id, chat_id):
+    """Messages of one of this user's chats (empty list if it is someone else's or does not exist)."""
+    rows = q("""SELECT c.id, c.ts, c.role, c.text, p.payload FROM conversations c LEFT JOIN chat_payloads p ON p.conversation_id=c.id
+                WHERE c.user_id=? AND c.chat_id=? ORDER BY c.id""", user_id, chat_id)
+    return [{"id": r["id"], "ts": r["ts"], "role": r["role"], "text": r["text"],
+             "payload": json.loads(r["payload"]) if r["payload"] else None} for r in rows]
+
+
+def delete_chat(user_id, chat_id):
+    """Delete one of this user's chats (turns, stored visuals, remembered well sets). Returns the number of turns removed;
+    0 for someone else's chat id, so nothing outside the user's own history can be touched."""
+    ids = [r["id"] for r in q("SELECT id FROM conversations WHERE user_id=? AND chat_id=?", user_id, chat_id)]
+    if not ids:
+        return 0
+    marks = ",".join("?" * len(ids))
+    db().execute(f"DELETE FROM chat_payloads WHERE conversation_id IN ({marks})", ids)
+    db().execute(f"DELETE FROM conversations WHERE id IN ({marks})", ids)
+    db().execute("DELETE FROM conversation_entities WHERE user_id=? AND chat_id=?", (user_id, chat_id))
+    db().commit()
+    return len(ids)
+
+
+def chat_history(user_id, chat_id, limit=12):
+    """Prior turns as plain LLM messages so a follow-up in the same chat has context."""
+    return [{"role": m["role"], "content": m["text"]} for m in chat_messages(user_id, chat_id)[-limit:] if m["text"]]
 
 
 def remember(user_id, chat_id, label, well_ids, ts=None):

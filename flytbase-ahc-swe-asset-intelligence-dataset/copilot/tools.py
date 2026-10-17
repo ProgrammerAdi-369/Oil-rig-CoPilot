@@ -1,18 +1,46 @@
 """Deterministic query tools. Each returns {"rows": [...], "evidence": [ids], "visual": str, ...}; the LLM only picks a
 tool and phrases the result. All numbers come from the SQL views (corrections and rule overrides already applied)."""
+import os
 import sqlite3
+import threading
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent / "copilot.db"
-_db = None
+DB_PATH = Path(os.environ.get("COPILOT_DB") or Path(__file__).parent.parent / "copilot.db")  # COPILOT_DB selects e.g. copilot.test.db
+_local = threading.local()  # one connection per thread: the HTTP server is threaded, sqlite3 connections are not shareable
 
 
 def db():
-    global _db
-    if _db is None:
-        _db = sqlite3.connect(DB_PATH)
-        _db.row_factory = sqlite3.Row
-    return _db
+    path = str(DB_PATH)  # eval scripts redirect DB_PATH to a throw-away copy; reconnect when it changes
+    if getattr(_local, "path", None) != path:
+        _local.con = sqlite3.connect(path, timeout=30)
+        _local.con.row_factory = sqlite3.Row
+        _local.path = path
+    return _local.con
+
+
+def reset_runtime():
+    """Delete everything users created at run time (notes, corrections, rules, chats) so the data is exactly what ingest produced.
+    Used by `server --reset-demo` and by every eval, so tests never depend on what someone did in the UI."""
+    for sql in ("DELETE FROM note_claims", "DELETE FROM notes WHERE note_id LIKE 'USR-%'", "DELETE FROM corrections WHERE source_note_id IS NULL",
+                "DELETE FROM rules WHERE created_by LIKE 'user:%'", "DELETE FROM conversations", "DELETE FROM conversation_entities",
+                "DELETE FROM chat_payloads"):
+        try:
+            db().execute(sql)
+        except sqlite3.OperationalError:  # table not created yet on an older database
+            pass
+    db().commit()
+
+
+def clean_copy():
+    """Point the tools at a throw-away copy of the database with no runtime data; returns its path."""
+    import shutil
+    import tempfile
+    global DB_PATH
+    tmp = Path(tempfile.mkdtemp()) / "copilot.db"
+    shutil.copy(DB_PATH, tmp)
+    DB_PATH = tmp
+    reset_runtime()
+    return tmp
 
 
 def q(sql, *args):
