@@ -135,7 +135,8 @@ def repairs(res, a):
         return f"No repairs{_where(a)}{_when(res)}."
     if a.get("group_by") == "well":
         total = sum(r["cost_usd"] or 0 for r in rows)
-        out = [f"**Repair cost by well**{_when(res)}: **${total:,.0f}** over {sum(r['jobs'] for r in rows)} jobs."]
+        out = [f"**{'Top ' + str(res['top']) + ' wells by repair cost' if res.get('top') else 'Repair cost by well'}{_where(a)}**{_when(res)}: "
+               f"**${total:,.0f}** over {sum(r['jobs'] for r in rows)} jobs."]
         return "\n".join(out + [f"- [{r['asset_id']}] **${r['cost_usd']:,.0f}** over {r['jobs']} jobs" for r in rows[:MAX_ROWS]] + _more(rows))
     out = [f"**{len(rows)} repair{'s' if len(rows) != 1 else ''}{_where(a)}**{_when(res)}, **${res['total_cost_usd']:,.0f}** in total:"]
     out += [f"- {r['started']} [{r['asset_id']}] {r['maintenance_type']} {r['equipment_kind']}: {r['issue']} (${r['cost_usd']:,.0f}) "

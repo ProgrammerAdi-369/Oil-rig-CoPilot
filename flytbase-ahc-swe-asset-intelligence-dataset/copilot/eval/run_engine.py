@@ -37,6 +37,11 @@ for statement in ("The 15 Oct reading for WELL-0164 is wrong.", "WELL-0175 is ru
     assert router.route(statement) is None, statement
 plan = router.route("Which 3 wells in Northeast Block 7 had the most downtime in the last 4 months?")[0]["args"]
 assert plan == {"group_by": "well", "area_id": "NE-07", "last_months": 4, "top_n": 3}, plan
+plan = router.route("Which wells in Southwest Block 23 have had the most repair spending this year? Show the top 3.")
+assert plan[0]["tool"] == "repairs" and plan[0]["args"]["group_by"] == "well" and plan[0]["top"] == 3, plan
+for subjects in ("Compare spill volumes between Southwest Block 23 and Northeast Block 7 over the last 6 months.",
+                 "Which is worse for spills, Southwest Block 23 or Northeast Block 7?", "Is WELL-0001 or WELL-0002 producing?"):
+    assert router.route(subjects) is None, subjects  # more than one area/well: LLM planner, never a one-subject answer
 ok("router: 13 questions routed to the right tool and arguments, 7 statements/unclear phrasings left to the LLM")
 
 # ---- gateway: breaker, cache, fallback model, polish
@@ -96,6 +101,9 @@ out = agent.ask("Is WELL-0164 producing oil right now?", "U-201", key="k")
 assert "NOT producing" in out["text"] and "INS-0164-0205" in out["evidence"], out["text"]
 out = agent.ask("The reading for WELL-0164 is wrong, it is really 41.", "U-201", key="k")
 assert "could not map" in out["text"] and out["trace"] == [], out
+out = agent.ask("Which wells in Southwest Block 23 have had the most repair spending this year? Show the top 3.", "U-201", key="k")
+assert out["text"].startswith("**Top 3 wells by repair cost") and len(out["rows"]) == 3 and out["visual"] == "bar", out["text"]
+assert all(e.split("-")[1] in {r["asset_id"][-4:] for r in out["rows"]} for e in out["tool_evidence"]), "evidence must belong to the 3 wells shown"
 ok("ask: routable questions answered with the model down, others get the help text")
 
 agent.USE_ROUTER = False

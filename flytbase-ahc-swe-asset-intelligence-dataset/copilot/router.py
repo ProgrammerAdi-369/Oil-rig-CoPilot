@@ -45,6 +45,8 @@ def route(question):
         return None
     wells = list(dict.fromkeys(f"WELL-{n}" for n in re.findall(r"well[- ]?(\d{4})", q)))
     areas, period, top = _areas(question), _period(q), _top_n(q)
+    if len(areas) > 1 or len(wells) > 1:
+        return None  # comparisons across areas/wells need the LLM planner; the rules answer for one subject only
     area = {"area_id": areas[0]} if areas else {}
     well = {"well_id": wells[0]} if len(wells) == 1 else {}
     wtype = {"well_type": m[0].upper()} if (m := re.findall(r"\bt\d{3}\b", q)) else {}
@@ -74,8 +76,9 @@ def route(question):
         by = "area" if has(r"by area|per area") else "month" if has(r"by month|per month") else "well"
         return [{"tool": "downtime", "args": {"group_by": by, **area, **well, **wtype, **period, **({"top_n": top} if top else {})}}]
     if has(r"repair|maintenance") and has(r"cost|spen[dt]|how much|total|\bhow many\b|list|show|which"):
+        ranked = has(r"\bmost\b|highest|biggest|\btop\b|per well|by well|each well")
         return [{"tool": "repairs", "args": {**area, **well, **wtype, **period, **({"equipment_kind": kind} if kind else {}),
-                                             **({"group_by": "well"} if has(r"per well|by well|each well") else {})}}]
+                                             **({"group_by": "well"} if ranked else {})}, **({"top": top} if ranked and top else {})}]
     if well and has(r"line chart|trend|against air|vs\.? air|temperature"):
         return [{"tool": "series", "args": {**well, **(period or {"last_weeks": 13})}}]
     if well and has(r"\bnotes?\b"):

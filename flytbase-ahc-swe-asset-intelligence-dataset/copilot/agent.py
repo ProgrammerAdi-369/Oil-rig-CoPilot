@@ -117,6 +117,10 @@ def run_plan(plan, user_id):
         if st.get("keep") and res.get("rows"):
             rows = [r for r in res["rows"] if all(r.get(k) in v for k, v in st["keep"].items())]
             res = {**res, "rows": rows, "evidence": [i for r in rows for i in (r.get("evidence") or [r.get("inspection_id")])]}
+        if st.get("top") and res.get("rows"):  # "top 3 wells": keep the first rows of the ranked result and their records
+            rows = res["rows"][:st["top"]]
+            wells = {r["asset_id"][-4:] for r in rows}
+            res = {**res, "rows": rows, "top": st["top"], "evidence": [e for e in res["evidence"] if e.split("-")[1] in wells]}
         steps.append({"tool": st["tool"], "args": args, "res": res})
         if st["tool"] == "recall" and not ids:
             break  # nothing to look up: the narrator explains instead of running the next step on an empty well list
