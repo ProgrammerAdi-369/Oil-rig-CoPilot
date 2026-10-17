@@ -1,1 +1,11 @@
 .env
+.env.*
+!.env.example
+
+# data (not tracked)
+*.db
+flytbase-ahc-swe-asset-intelligence-dataset/sample-data/
+
+# python
+__pycache__/
+*.pyc
