@@ -10,6 +10,7 @@ from copilot import tools
 
 tools.clean_copy()  # throw-away copy with no runtime data, whatever was done in the UI
 from copilot import agent, server  # noqa: E402  (after the DB redirect)
+agent.USE_ROUTER = False  # these tests script the model's tool calls; the router would answer the same questions itself
 from copilot.eval.oracle import Oracle  # noqa: E402
 
 srv = server.ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)

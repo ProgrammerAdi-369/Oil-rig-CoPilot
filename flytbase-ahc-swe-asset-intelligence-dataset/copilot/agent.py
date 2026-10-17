@@ -6,13 +6,11 @@ import inspect
 import json
 import os
 import re
-import threading
-import time
-import urllib.request
+import urllib.error
 import uuid
 from pathlib import Path
 
-from . import memory, retrieval, tools
+from . import llm, memory, narrate, retrieval, router, tools
 
 for d in Path(__file__).resolve().parents:  # nearest .env above the repo supplies GEMINI_API_KEY etc.
     if (d / ".env").exists():
@@ -22,12 +20,8 @@ for d in Path(__file__).resolve().parents:  # nearest .env above the repo suppli
                 os.environ.setdefault(k.strip().removeprefix("export "), v.strip().strip("\"'"))
         break
 
-BASE = os.environ.get("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
 MODEL = os.environ.get("LLM_MODEL", "gemma-4-26b-a4b-it")
-MIN_INTERVAL = float(os.environ.get("LLM_MIN_INTERVAL", "0"))  # seconds between LLM calls
-_last_call = 0.0
-_pace = threading.Lock()
-DEADLINE = float(os.environ.get("LLM_DEADLINE", "900"))  # seconds of retrying per model call; the server lowers it
+USE_ROUTER = os.environ.get("ROUTER", "1") != "0"  # rule-based router first, the LLM tool loop only when it is unsure
 ADDENDUM = Path(__file__).parent / "prompt_addendum.txt"
 
 REGISTRY = {f.__name__: f for f in (
@@ -85,26 +79,7 @@ def schema(fn):
 
 
 def call_llm(messages, key, model=None, with_tools=True):
-    payload = {"model": model or MODEL, "messages": messages, "temperature": 0}
-    if with_tools:
-        payload["tools"] = [schema(f) for f in REGISTRY.values()]
-    body = json.dumps(payload).encode()
-    req = urllib.request.Request(f"{BASE}/chat/completions", body, {"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-    global _last_call
-    deadline = time.time() + DEADLINE  # interactive callers (the web server) cap the total time spent retrying
-    for attempt in range(7):
-        with _pace:  # pace calls across threads to stay under free-tier limits
-            time.sleep(max(0, MIN_INTERVAL - (time.time() - _last_call)))
-            _last_call = time.time()
-        try:
-            with urllib.request.urlopen(req, timeout=max(5, min(120, deadline - time.time()))) as r:
-                return json.load(r)["choices"][0]["message"]
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
-            retry_after = e.headers.get("Retry-After") if isinstance(e, urllib.error.HTTPError) else None
-            wait = min(90, float(retry_after) if retry_after and retry_after.isdigit() else 10 * 2 ** attempt)
-            if attempt == 6 or time.time() + wait > deadline or (isinstance(e, urllib.error.HTTPError) and e.code not in (429, 500, 503)):
-                raise
-            time.sleep(wait)  # back off and retry
+    return llm.call(messages, key, model, [schema(f) for f in REGISTRY.values()] if with_tools else None)
 
 
 def run_tool(name, args, user_id):
@@ -128,9 +103,30 @@ def compact(res, limit=60):
     return json.dumps(out, default=str)
 
 
+def run_plan(plan, user_id):
+    """Execute a router plan with no model call -> [{"tool", "args", "res"}]. A recall step feeds its wells to the next step."""
+    steps, ids = [], []
+    for st in plan:
+        args = {k: (ids if v == "@ids" else v) for k, v in st["args"].items()}
+        size = args.pop("size", None)
+        res = run_tool(st["tool"], dict(args), user_id)
+        if st["tool"] == "recall":
+            ents = res.get("rows") or []
+            res["chosen"] = next((e for e in ents if size and len(e["well_ids"]) == size), ents[0] if ents else None)
+            ids = res["chosen"]["well_ids"] if ents else []
+        if st.get("keep") and res.get("rows"):
+            rows = [r for r in res["rows"] if all(r.get(k) in v for k, v in st["keep"].items())]
+            res = {**res, "rows": rows, "evidence": [i for r in rows for i in (r.get("evidence") or [r.get("inspection_id")])]}
+        steps.append({"tool": st["tool"], "args": args, "res": res})
+        if st["tool"] == "recall" and not ids:
+            break  # nothing to look up: the narrator explains instead of running the next step on an empty well list
+    return steps
+
+
 def ask(question, user_id, chat_id=None, history=None, key=None, ts=None):
-    """One user turn -> {"text", "visual", "rows", "evidence"}. history holds earlier messages of this chat."""
-    key = key or os.environ.get("LLM_API_KEY") or os.environ["GEMINI_API_KEY"]
+    """One user turn -> {"text", "visual", "rows", "evidence"}. history holds earlier messages of this chat.
+    The router answers what it recognises with no model call; everything else goes through the LLM tool loop."""
+    key = key or os.environ.get("LLM_API_KEY") or os.environ.get("GEMINI_API_KEY")
     chat_id = chat_id or uuid.uuid4().hex[:8]
     memory.log_turn(user_id, chat_id, "user", question, ts)
     areas = "; ".join(f"{r['area_id']} = {r['name']}" for r in tools.q("SELECT area_id, name FROM areas"))
@@ -138,38 +134,54 @@ def ask(question, user_id, chat_id=None, history=None, key=None, ts=None):
     messages = [{"role": "system", "content": SYSTEM.format(today=tools.as_of(), areas=areas) + extra}, *(history or []),
                 {"role": "user", "content": question}]
     last, evidence, trace, all_rows, tool_evidence, tool_results = None, [], [], [], [], []
-    for _ in range(8):
-        try:
-            msg = call_llm(messages, key)
-        except (urllib.error.URLError, TimeoutError):
-            if not trace:
-                raise  # nothing happened yet: let the caller report the failure
-            done = ", ".join(dict.fromkeys(t["tool"] for t in trace))
-            changed = any(t["tool"] in ("correct_value", "add_well_note", "add_type_rule") and not t["error"] for t in trace)
-            note = "The change you asked for was recorded." if changed else "The results are shown below."
-            msg = {"role": "assistant", "content": f"I ran {done}, but the language model did not answer in time, so there is no written summary. "
-                                                   f"{note} Ask again if you want an explanation."}
-            break
+
+    def record(name, args, res):
+        nonlocal last, all_rows, tool_evidence, evidence
+        trace.append({"tool": name, "args": {k: v for k, v in args.items() if k != "user_id"},
+                      "n_rows": len(res.get("rows") or []), "error": res.get("error")})
+        all_rows += [r for r in (res.get("rows") or []) if isinstance(r, dict)]
+        tool_evidence += res.get("evidence", [])
+        if res.get("rows") and "error" not in res:
+            last = res
+            tool_results.append({"tool": name, "args": trace[-1]["args"], "rows": res["rows"][:200],
+                                 "visual": res.get("visual"), "window": res.get("window"), "evidence": res.get("evidence", [])})
+            evidence += res.get("evidence", [])
+            ids = [v for r in res["rows"] if isinstance(r, dict) for k, v in r.items()
+                   if k in ("asset_id", "key", "well_id") and isinstance(v, str) and v.startswith("WELL-")]
+            if name != "recall":
+                memory.remember(user_id, chat_id, question[:120], ids, ts)
+
+    plan = router.route(question) if USE_ROUTER else None
+    if plan:
+        steps = run_plan(plan, user_id)
+        for st in steps:
+            record(st["tool"], st["args"], st["res"])
+        msg = {"role": "assistant", "content": llm.polish(narrate.narrate(steps), key)}
         messages.append(msg)
-        if not msg.get("tool_calls"):
-            break
-        for tc in msg["tool_calls"]:
-            args = json.loads(tc["function"]["arguments"] or "{}")
-            res = run_tool(tc["function"]["name"], args, user_id)
-            trace.append({"tool": tc["function"]["name"], "args": {k: v for k, v in args.items() if k != "user_id"},
-                          "n_rows": len(res.get("rows") or []), "error": res.get("error")})
-            all_rows += [r for r in (res.get("rows") or []) if isinstance(r, dict)]
-            tool_evidence += res.get("evidence", [])
-            if res.get("rows") and "error" not in res:
-                last = res
-                tool_results.append({"tool": tc["function"]["name"], "args": trace[-1]["args"], "rows": res["rows"][:200],
-                                     "visual": res.get("visual"), "window": res.get("window"), "evidence": res.get("evidence", [])})
-                evidence += res.get("evidence", [])
-                ids = [v for r in res["rows"] if isinstance(r, dict) for k, v in r.items()
-                       if k in ("asset_id", "key", "well_id") and isinstance(v, str) and v.startswith("WELL-")]
-                if tc["function"]["name"] != "recall":
-                    memory.remember(user_id, chat_id, question[:120], ids, ts)
-            messages.append({"role": "tool", "tool_call_id": tc["id"], "content": compact(res)})
+    else:
+        for _ in range(8):
+            try:
+                msg = call_llm(messages, key)
+            except (urllib.error.URLError, TimeoutError):
+                if not trace:
+                    if not USE_ROUTER:
+                        raise  # nothing happened yet: let the caller report the failure
+                    msg = {"role": "assistant", "content": narrate.HELP}
+                    break
+                done = ", ".join(dict.fromkeys(t["tool"] for t in trace))
+                changed = any(t["tool"] in ("correct_value", "add_well_note", "add_type_rule") and not t["error"] for t in trace)
+                note = "The change you asked for was recorded." if changed else "The results are shown below."
+                msg = {"role": "assistant", "content": f"I ran {done}, but the language model did not answer in time, so there is no written summary. "
+                                                       f"{note} Ask again if you want an explanation."}
+                break
+            messages.append(msg)
+            if not msg.get("tool_calls"):
+                break
+            for tc in msg["tool_calls"]:
+                args = json.loads(tc["function"]["arguments"] or "{}")
+                res = run_tool(tc["function"]["name"], args, user_id)
+                record(tc["function"]["name"], args, res)
+                messages.append({"role": "tool", "tool_call_id": tc["id"], "content": compact(res)})
     text = re.sub(r"</?thought>", "", re.sub(r"<thought>.*?</thought>", "", msg.get("content") or "", flags=re.S)).strip()
     turn_id = memory.log_turn(user_id, chat_id, "assistant", text, ts)
     named = named_visuals(question)

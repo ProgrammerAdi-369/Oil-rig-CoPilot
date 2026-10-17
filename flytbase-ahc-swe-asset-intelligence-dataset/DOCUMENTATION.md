@@ -622,6 +622,21 @@ conflict; cite evidence IDs in brackets; never use another user's private conver
 **Visual selection** (from `03-evaluation-queries.md`): one well now → card · list → table · change over time → line ·
 comparison → bar · locations → map · two dimensions → heatmap. A visual named in the question always wins.
 
+### 10.1 Route → execute → narrate (the model is optional)
+
+Every question first goes through `copilot/router.py`, a rule-based router that turns recognised questions into an ordered plan of
+tool calls (area names, well IDs, "last 4 months", "in 2025", "top 3", "the wells we discussed yesterday" are all parsed by rules).
+`agent.run_plan` runs the plan, `copilot/narrate.py` writes the answer from templates (headline numbers, `[ID]` citations, caveats),
+and the same `visual` / `rows` / `evidence` contract is returned. **Zero model calls are needed**, so an answer is never late, empty or
+lost to a rate limit. Statements, corrections and unfamiliar phrasing return `None` from the router and use the LLM tool loop above;
+if the model is also unavailable the user gets a help message, not an error.
+
+`copilot/llm.py` is the single gateway for every model call: SQLite response cache keyed by prompt, a fallback model
+(`LLM_FALLBACK`, default `gemma-4-31b-it`), a per-call deadline, request pacing (`LLM_MIN_INTERVAL`) and a **circuit breaker** (two failed
+calls in a row skip the model for `LLM_BREAKER_SECS`, default 60 s). When enabled, after the templated answer is built, one optional call
+(`llm.polish`) rewrites it in plainer prose; the rewrite is accepted only if every number and ID of the template is still present.
+It is **off by default** (`LLM_POLISH=1` enables it): on the free tier it can add up to 15 s per answer. `ROUTER=0` disables the router (old behaviour), `run_agent --no-llm` runs the router path only.
+
 ---
 
 ## 11. Memory, feedback and conflicts
@@ -736,7 +751,8 @@ The test dataset arrives in the same format with more wells and history, loaded 
 |---|---|---|
 | Deterministic tools vs expected answers | `py -m copilot.eval.run_examples` | Q1–Q11 and Q14 (first half) match `03-evaluation-queries.md` exactly |
 | Multi-user memory session | `py -m copilot.eval.run_memory` | Q11–Q18 on a throw-away copy of the DB: corrections, scope, privacy, conflicts |
-| Real LLM end to end | `py -m copilot.eval.run_agent [Q…]` | all 18 questions through Gemma 4, with expected-marker checks |
+| Real LLM end to end | `py -m copilot.eval.run_agent [--no-llm] [Q…]` | all 18 questions through router + Gemma 4, with expected-marker checks; `--no-llm` shows what the router alone answers |
+| Router, gateway, fallbacks | `py -m copilot.eval.run_engine` | routing table, circuit breaker, cache, fallback model, polish validation, answers with the model down |
 
 ### 13.2 Coverage map
 
@@ -813,7 +829,10 @@ copilot/
                     repairs, rca_candidates, well_notes (+ window(), rule())
   retrieval.py      hybrid search (FTS5 + embeddings, RRF), embed_missing()
   memory.py         correct_value, add_well_note, add_type_rule, log_turn, remember, recall
-  agent.py          OpenAI-compatible tool loop, prompt, visual + evidence selection
+  agent.py          router-first ask(), OpenAI-compatible tool loop, prompt, visual + evidence selection
+  router.py         question -> plan of tool calls (rules, no model)
+  narrate.py        templated answers for every tool result
+  llm.py            model gateway: cache, fallback model, deadline, circuit breaker, polish
   eval/
     run_examples.py   deterministic assertions for the example questions
     run_memory.py     scripted multi-user memory session (Q11–Q18)

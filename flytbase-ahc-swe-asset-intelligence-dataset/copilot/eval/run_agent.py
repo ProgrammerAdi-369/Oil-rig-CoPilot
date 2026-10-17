@@ -1,6 +1,8 @@
 """All 18 example questions through the real LLM, in the order of 03-evaluation-queries.md, on a throw-away DB copy.
-   py -m copilot.eval.run_agent [Q-number ...]      Prints each answer and which expected markers it contains."""
+   py -m copilot.eval.run_agent [--no-llm] [Q-number ...]   Prints each answer and which expected markers it contains.
+   --no-llm removes the model key, so only the rule-based router and templates answer (questions it can't route fail)."""
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -8,6 +10,11 @@ from copilot import tools
 
 tools.clean_copy()  # throw-away copy with no runtime data, whatever was done in the UI
 from copilot import agent  # noqa: E402
+
+if "--no-llm" in sys.argv:
+    sys.argv.remove("--no-llm")
+    for k in ("LLM_API_KEY", "GEMINI_API_KEY"):
+        os.environ.pop(k, None)
 
 M, J, T, JK, L = "U-201", "U-202", "U-204", "U-102", "U-401"
 D1, D2 = "2026-10-15T10:00:00Z", "2026-10-16T10:00:00Z"
