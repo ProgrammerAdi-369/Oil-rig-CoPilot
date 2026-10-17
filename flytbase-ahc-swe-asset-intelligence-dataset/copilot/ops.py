@@ -292,6 +292,13 @@ def data_availability(topic):
         return {"rows": [{"topic": topic, "measured": "unknown", "detail": "not in the catalog of known gaps"}], "evidence": [], "visual": "text", "summary": base}
     c = CATALOG[hit]
     mentions = q("SELECT n.note_id, n.asset_id, n.text FROM notes n WHERE n.text LIKE '%pressure%' ORDER BY n.created_at") if hit == "pressure" else []
-    psi = q("SELECT count(*) AS n FROM chunks WHERE doc_type='report' AND text LIKE '% psi%'")[0]["n"] if hit == "pressure" else 0
-    return {"rows": [{"topic": hit, "measured": "no", "why": c["why"], "nearest_data": c["nearest"]}], "evidence": [m["note_id"] for m in mentions],
-            "visual": "text", "summary": {**base, "pressure_mentions": [{"note": m["note_id"], "well": m["asset_id"], "text": m["text"]} for m in mentions], "psi_text_in_reports": psi}}
+    extra = {}
+    if hit == "pressure":
+        psi = q("SELECT count(DISTINCT ref_id) AS reports, count(DISTINCT asset_id) AS wells FROM chunks WHERE doc_type='report' AND text LIKE '%psi%'")[0]
+        sample = q("SELECT ref_id, asset_id, substr(text, instr(text, 'pressure'), 160) AS excerpt FROM chunks WHERE doc_type='report' AND text LIKE '%maximum operating pressure%' LIMIT 1")
+        extra = {"flowline_psi_in_reports": psi["reports"], "flowline_psi_wells": psi["wells"], "flowline_psi_example": sample[0] if sample else None}
+        c = {**c, "nearest": f"{c['nearest'].split(';')[0]}; the only pressure figures are the flowline's maximum operating pressure and the test pressure "
+                             f"(1.25 × MOP, WS-05) written in {psi['reports']} repair reports on {psi['wells']} wells: those are engineering limits of a pipe, not reservoir pressure"}
+    return {"rows": [{"topic": hit, "measured": "no", "why": c["why"], "nearest_data": c["nearest"]}],
+            "evidence": [m["note_id"] for m in mentions] + ([extra["flowline_psi_example"]["ref_id"]] if extra.get("flowline_psi_example") else []),
+            "visual": "text", "summary": {**base, **extra, "pressure_mentions": [{"note": m["note_id"], "well": m["asset_id"], "text": m["text"]} for m in mentions]}}
